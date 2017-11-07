@@ -2659,8 +2659,8 @@ function bot_screen_sellcoin_balance(sig) {
 			get_coin_info('MNZ');
 			bot_screen_sellcoin_balance();
 		} else {
-			$('.trading_sellcoin_ticker_name').html('<img src="img/cryptologo/'+coin.toLowerCase()+'.png" style="width: 50px;"> '+ return_coin_name(coin) + ' ('+coin+')');
-			$('.trading_sellcoin_balance').html(data.coin.balance + ' <span style="font-size: 80%; font-weight: 100;">' + coin + '</span>');
+			$('.trading_sellcoin_ticker_name').html('<img src="img/cryptologo/'+coin.toLowerCase()+'.png" style="width: 30px;"> '+ return_coin_name(coin) + ' ('+coin+')');
+			$('.trading_sellcoin_balance').html(data.coin.balance + ' <span style="font-size: 60%; font-weight: 100;">' + coin + '</span><br><span style="font-size: 50%; font-weight: 200;">' + data.coin.smartaddress + '</span>');
 		}
 
 	}).fail(function(jqXHR, textStatus, errorThrown) {
@@ -2705,8 +2705,8 @@ function bot_screen_coin_balance(sig) {
 			get_coin_info('MNZ');
 			bot_screen_coin_balance();
 		} else {
-			$('.trading_coin_ticker_name').html('<img src="img/cryptologo/'+coin.toLowerCase()+'.png" style="width: 50px;"> '+ return_coin_name(coin) + ' ('+coin+')');
-			$('.trading_coin_balance').html(data.coin.balance + ' <span style="font-size: 80%; font-weight: 100;">' + coin + '</span>');
+			$('.trading_coin_ticker_name').html('<img src="img/cryptologo/'+coin.toLowerCase()+'.png" style="width: 30px;"> '+ return_coin_name(coin) + ' ('+coin+')');
+			$('.trading_coin_balance').html(data.coin.balance + ' <span style="font-size: 80%; font-weight: 100;">' + coin + '</span><br><span style="font-size: 50%; font-weight: 200;">' + data.coin.smartaddress + '</span>');
 		}
 
 	}).fail(function(jqXHR, textStatus, errorThrown) {
