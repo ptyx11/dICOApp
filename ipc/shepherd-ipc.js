@@ -155,10 +155,24 @@ ExecMarketMaker = function(data) {
         };
 
       //console.log(JSON.stringify(_customParam))
-
       //console.log(`exec ${dICOBin} ${JSON.stringify(_customParam)}`);
 
-      mmid = exec(`${dICOBin} '${JSON.stringify(_customParam)}'`, {
+      let params = _customParam;
+      if (osPlatform !== 'win32') {
+	    params = JSON.stringify(_customParam);
+            params = `'${params}'`;
+      } else {
+            dICOBin = '"'+dICOBin+'"';
+            params.userhome = process.env.APPDATA;
+            // console.log('[Decker] dICOBin = '+dICOBin+', dICODir = '+dICODir);
+	    params = JSON.stringify(_customParam);
+            params = params.replace(/"/g, '\\"');
+            params = '"' + params +'"';
+      }
+
+      // console.log(`[Decker] exec ${dICOBin} ${params}`);
+
+      mmid = exec(`${dICOBin} ${params}`, {
             cwd: dICODir,
             maxBuffer: 1024 * 10000 // 10 mb
             }, function(error, stdout, stderr) {
