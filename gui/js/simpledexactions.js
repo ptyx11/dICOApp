@@ -379,7 +379,7 @@ $('.btn_coindashboard_inventory').click(function(e) {
 	clac_coin_inventory(calc_data);
 });
 
-$('.btn-inventoryclose').click(function(e) {
+/*$('.btn-inventoryclose').click(function(e) {
 	e.preventDefault();
 	console.log('btn-inventoryclose clicked');
 	//console.log($(this).data());
@@ -389,6 +389,35 @@ $('.btn-inventoryclose').click(function(e) {
 	$('.dex_showlist_unspents_tbl tbody').empty();
 	$('.RawJSONInventory-output').empty();
 	check_coin_balance_Interval = setInterval(check_coin_balance,3000);
+});*/
+
+$('.btn-inventoryclose').click(function(e) {
+	e.preventDefault();
+	console.log('btn-inventoryclose clicked');
+	//console.log($(this).data());
+	$('.screen-exchange').show()
+	$('.screen-inventory').hide();
+	$('.dex_showinv_alice_tbl tbody').empty();
+	$('.dex_showlist_unspents_tbl tbody').empty();
+	$('.RawJSONInventory-output').empty();
+	$('.coin_ticker').html('MNZ');
+	$.each($('.coinexchange[data-coin]'), function(index, value) {
+		$('.coinexchange[data-coin]').data('coin', 'MNZ');
+	});
+
+	check_coin_balance(false);
+	CheckOrderbook_Interval = setInterval(CheckOrderBookFn,3000);
+	check_swap_status_Internal = setInterval(check_swap_status,10000);
+	check_swap_status();
+	check_bot_list_Internal = setInterval(check_bot_list, 60000);
+	check_bot_list();
+	check_my_prices_Internal = setInterval(check_my_prices, 60000);
+	check_my_prices();
+	bot_screen_coin_balance_Internal = setInterval(bot_screen_coin_balance, 30000);
+	bot_screen_coin_balance();
+	bot_screen_sellcoin_balance_Internal = setInterval(bot_screen_sellcoin_balance, 30000);
+	bot_screen_sellcoin_balance();
+	get_coin_info('MNZ');
 });
 
 $('.btn-inventoryrefresh').click(function(e) {
@@ -563,6 +592,8 @@ $('.btn_coindashboard_exchange').click(function(e) {
 	check_my_prices();
 	bot_screen_coin_balance_Internal = setInterval(bot_screen_coin_balance, 30000);
 	bot_screen_coin_balance();
+	bot_screen_sellcoin_balance_Internal = setInterval(bot_screen_sellcoin_balance, 30000);
+	bot_screen_sellcoin_balance();
 });
 
 $('.btn-exchangeclose').click(function(e){
@@ -577,6 +608,7 @@ $('.btn-exchangeclose').click(function(e){
 	check_bot_list(false);
 	check_my_prices(false);
 	bot_screen_coin_balance(false);
+	bot_screen_sellcoin_balance(false);
 	check_coin_balance_Interval = setInterval(check_coin_balance(),3000);
 	check_coin_balance();
 });
@@ -639,7 +671,7 @@ $('.trading_pair_coin_price').keyup(function(){
 
 	pair_volume = pair_price * base_volume;
 
-	$('.relvol_basevol').html(pair_volume);
+	$('.relvol_basevol').html(pair_volume.toFixed(8));
 });
 
 $('.trading_pair_coin_volume').keyup(function(){
@@ -649,7 +681,7 @@ $('.trading_pair_coin_volume').keyup(function(){
 
 	pair_volume = pair_price * base_volume;
 
-	$('.relvol_basevol').html(pair_volume);
+	$('.relvol_basevol').html(pair_volume.toFixed(8));
 });
 
 
@@ -1153,8 +1185,8 @@ $("#inventory_slider_input1").keyup(function(){
 	var slider_total = slider1_total + slider2_total + slider3_total;
 	$('.inventory-sliderTotal').text(slider_total.toFixed(8));
 
-	var selected_coin = JSON.parse(sessionStorage.getItem('mm_selectedcoin'));
-	var coin_balance = selected_coin.balance;
+	//var selected_coin = JSON.parse(sessionStorage.getItem('mm_selectedcoin'));
+	var coin_balance = $('.inventory-title').data('balance');
 	console.log(coin_balance);
 
 
@@ -1180,8 +1212,8 @@ $("#inventory_slider_input2").keyup(function(){
 	var slider_total = slider1_total + slider2_total + slider3_total;
 	$('.inventory-sliderTotal').text(slider_total.toFixed(8));
 
-	var selected_coin = JSON.parse(sessionStorage.getItem('mm_selectedcoin'));
-	var coin_balance = selected_coin.balance;
+	//var selected_coin = JSON.parse(sessionStorage.getItem('mm_selectedcoin'));
+	var coin_balance = $('.inventory-title').data('balance');
 	console.log(coin_balance);
 
 	if(slider_total >= coin_balance) {
@@ -1206,8 +1238,8 @@ $("#inventory_slider_input3").keyup(function(){
 	var slider_total = slider1_total + slider2_total + slider3_total;
 	$('.inventory-sliderTotal').text(slider_total.toFixed(8));
 
-	var selected_coin = JSON.parse(sessionStorage.getItem('mm_selectedcoin'));
-	var coin_balance = selected_coin.balance;
+	//var selected_coin = JSON.parse(sessionStorage.getItem('mm_selectedcoin'));
+	var coin_balance = $('.inventory-title').data('balance');
 	console.log(coin_balance);
 
 	if(slider_total >= coin_balance) {
@@ -1236,8 +1268,8 @@ $("#inventory-slider1").on("slide", function(slideEvt) {
 	var slider_total = slider1_total + slider2_total + slider3_total;
 	$('.inventory-sliderTotal').text(slider_total.toFixed(8));
 
-	var selected_coin = JSON.parse(sessionStorage.getItem('mm_selectedcoin'));
-	var coin_balance = selected_coin.balance;
+	//var selected_coin = JSON.parse(sessionStorage.getItem('mm_selectedcoin'));
+	var coin_balance = $('.inventory-title').data('balance');
 	console.log(coin_balance);
 
 	if(slider_total >= coin_balance) {
@@ -1264,8 +1296,8 @@ $("#inventory-slider2").on("slide", function(slideEvt) {
 	var slider_total = slider1_total + slider2_total + slider3_total;
 	$('.inventory-sliderTotal').text(slider_total.toFixed(8));
 
-	var selected_coin = JSON.parse(sessionStorage.getItem('mm_selectedcoin'));
-	var coin_balance = selected_coin.balance;
+	//var selected_coin = JSON.parse(sessionStorage.getItem('mm_selectedcoin'));
+	var coin_balance = $('.inventory-title').data('balance');
 	console.log(coin_balance);
 
 	if(slider_total >= coin_balance) {
@@ -1292,8 +1324,8 @@ $("#inventory-slider3").on("slide", function(slideEvt) {
 	var slider_total = slider1_total + slider2_total + slider3_total;
 	$('.inventory-sliderTotal').text(slider_total.toFixed(8));
 
-	var selected_coin = JSON.parse(sessionStorage.getItem('mm_selectedcoin'));
-	var coin_balance = selected_coin.balance;
+	//var selected_coin = JSON.parse(sessionStorage.getItem('mm_selectedcoin'));
+	var coin_balance = $('.inventory-title').data('balance');
 	console.log(coin_balance);
 
 	if(slider_total >= coin_balance) {
@@ -2309,7 +2341,7 @@ $('.your_coins_balance_info').on('click', '.coin_balance_send', function() {
 			},
 			ok: {
 				label: "Send Transaction",
-				className: 'btn-primary btn-bot_settings_update',
+				className: 'btn-primary',
 				callback: function(){
 					var to_addr = $('#bot_send_toaddr').val();
 					var send_amount = $('#bot_send_amount').val();
@@ -2333,6 +2365,44 @@ $('.your_coins_balance_info').on('click', '.coin_balance_send', function() {
 	});
 
 });
+
+$('.your_coins_balance_info').on('click', '.coin_balance_inventory', function() {
+	console.log('coin_balance_inventory clicked');
+	console.log($(this).data());
+	coin = $(this).data('coin');
+	addr = $(this).data('addr');
+	balance = $(this).data('balance');
+
+	
+	$('.screen-exchange').hide()
+	$('.screen-inventory').show();
+	CheckOrderBookFn(false);
+	check_swap_status(false);
+	check_bot_list(false);
+	check_my_prices(false);
+	bot_screen_coin_balance(false);
+	bot_screen_sellcoin_balance(false);
+
+	$('.inventory-title').html('Manage Inventory ('+balance+' '+coin+')');
+	$('.inventory-title').data('coin', coin);
+	$('.inventory-title').data('balance', balance);
+	$('.coininventory[data-coin]').attr('data-coin', coin);
+	//$('.coininventory[data-coin]').attr('data-pair', $(this).data('pair'));
+	$('.coininventory[data-coin]').attr('data-addr', addr);
+	$('.inventory-sliderTotalCoin').html(' '+coin);
+
+	$('.dex_showinv_alice_tbl tbody').html('<th><div style="text-align: center;">Loading...</div></th>');
+	$('.dex_showlist_unspents_tbl tbody').html('<th><div style="text-align: center;">Loading...</div></th>');
+
+	check_coin_inventory(coin);
+	check_coin_listunspent($(this).data());
+
+	calc_data = {"coin": coin, "balance": balance};
+	clac_coin_inventory(calc_data);
+
+});
+
+
 
 
 function create_sendtx(coin,tx_data){
@@ -2372,62 +2442,6 @@ function create_sendtx(coin,tx_data){
 		// If fail
 		console.log(textStatus + ': ' + errorThrown);
 	});
-
-/*	var a1 = $.ajax({
-			async: true,
-			data: JSON.stringify(ajax_data),
-			dataType: 'json',
-			type: 'POST',
-			url: url
-		}),
-		a2 = a1.then(function(data) {
-			// .then() returns a new promise
-			console.log(data);
-			if (data.complete == false) {
-				toastr.error('Uncessful Transaction. Please try again.','Tansaction info');
-			}
-			if (data.complete == true) {
-				bootbox.confirm({
-					message: `<b>Send</b>: `+send_amount+` `+ajax_data.coin+`<br>
-									<b>To</b>: `+to_addr+`<br>`,
-					buttons: {
-						confirm: {
-							label: 'Confirm',
-							className: 'btn-primary'
-						},
-						cancel: {
-							label: 'Cancel',
-							className: 'btn-default'
-						}
-					},
-					callback: function (result) {
-						console.log('This was logged in the callback: ' + result);
-
-						if (result == true) {
-							var ajax_data2 = {"userpass":userpass,"method":"sendrawtransaction","coin": coin, "signedtx": data.hex};
-							console.log(ajax_data2);
-
-							toastr.info('Transaction Executed', 'Transaction Status');
-
-							$.ajax({
-									async: true,
-									data: JSON.stringify(ajax_data2),
-									dataType: 'json',
-									type: 'POST',
-									url: url
-								})
-						} else {
-							console.log('Sending Transaction operation canceled.');
-							return {'output': 'canceled'};
-						}
-					}
-				});
-			}
-	});
-
-	a2.done(function(data) {
-		console.log(data);
-	});*/
 }
 
 
@@ -3054,7 +3068,7 @@ function bot_screen_sellcoin_balance(sig) {
 					<button class="btn btn-danger btn-xs coin_balance_disable" style="margin-top: 6px;" data-electrum=true data-method="disable" data-coin="` + coin + `">Disable</button>
 					<button class="btn btn-warning btn-xs coin_balance_receive" style="margin-top: 6px;" data-coin="` + coin + `">Receive</button>
 					<button class="btn btn-success btn-xs coin_balance_send" style="margin-top: 6px;" data-coin="` + coin + `">Send</button>
-					<!--<button class="btn btn-info btn-xs" style="margin-top: 6px;" data-coin="` + coin + `">Inventory</button>-->
+					<button class="btn btn-info btn-xs coin_balance_inventory" style="margin-top: 6px;" data-coin="` + coin + `" data-addr="` + data.coin.smartaddress + `" data-balance="` + data.coin.balance + `">Inventory</button>
 				</span>`;
 				$('.trading_sellcoin_ticker_name').html('<img src="img/cryptologo/'+coin.toLowerCase()+'.png" style="width: 30px;"> '+ return_coin_name(coin) + ' ('+coin+')'+button_controls);
 				$('.trading_sellcoin_balance').html(data.coin.balance + ' <span style="font-size: 60%; font-weight: 100;">' + coin + '</span><br><span style="font-size: 50%; font-weight: 200;">' + data.coin.smartaddress + '</span>');
@@ -3117,7 +3131,7 @@ function bot_screen_coin_balance(sig) {
 					<button class="btn btn-danger btn-xs coin_balance_disable" style="margin-top: 6px;" data-electrum=true data-method="disable" data-coin="` + coin + `">Disable</button>
 					<button class="btn btn-warning btn-xs coin_balance_receive" style="margin-top: 6px;" data-coin="` + coin + `">Receive</button>
 					<button class="btn btn-success btn-xs coin_balance_send" style="margin-top: 6px;" data-coin="` + coin + `">Send</button>
-					<!--<button class="btn btn-info btn-xs" style="margin-top: 6px;" data-coin="` + coin + `">Inventory</button>-->
+					<button class="btn btn-info btn-xs coin_balance_inventory" style="margin-top: 6px;" data-coin="` + coin + `" data-addr="` + data.coin.smartaddress + `" data-balance="` + data.coin.balance + `">Inventory</button>
 				</span>`;
 				$('.trading_coin_ticker_name').html('<img src="img/cryptologo/'+coin.toLowerCase()+'.png" style="width: 30px;"> '+ return_coin_name(coin) + ' ('+coin+')'+button_controls);
 				$('.trading_coin_balance').html(data.coin.balance + ' <span style="font-size: 60%; font-weight: 100;">' + coin + '</span><br><span style="font-size: 50%; font-weight: 200;">' + data.coin.smartaddress + '</span>');
