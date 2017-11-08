@@ -882,76 +882,147 @@ function enable_disable_coin(data) {
 	if (electrum_option == false) {
 		console.log(electrum_option);
 		console.log("electrum selected for " + data.coin);
-		var rand_electrum_srv = get_random_electrum_server(data.coin);
-		var ajax_data = {"userpass":userpass,"method":"electrum","coin":data.coin,"ipaddr":rand_electrum_srv.ipaddr,"port":rand_electrum_srv.port};
+		//var rand_electrum_srv = get_random_electrum_server(data.coin);
+		$.each(electrum_servers_list[data.coin], function(index,val){
+			var ipaddr = _.keys(val);
+			var return_data_ipaddr = ipaddr[0];
+			var return_data_port = val[ipaddr[0]];
+			console.log(return_data_ipaddr);
+			console.log(return_data_port);
+
+			var ajax_data = {"userpass":userpass,"method":"electrum","coin":data.coin,"ipaddr":return_data_ipaddr,"port":return_data_port};
+
+			$.ajax({
+				async: true,
+				data: JSON.stringify(ajax_data),
+				dataType: 'json',
+				type: 'POST',
+				url: url
+			}).done(function(data) {
+				// If successful
+				console.log(data);
+				if (!data.userpass === false) {
+					console.log('first marketmaker api call execution after marketmaker started.')
+					sessionStorage.setItem('mm_usercoins', JSON.stringify(data.coins));
+					sessionStorage.setItem('mm_userpass', data.userpass);
+					sessionStorage.setItem('mm_mypubkey', data.mypubkey);
+					get_coin_info('MNZ');
+
+					if (ajax_data.status === 'enable') {
+						toastr.success(ajax_data.coin+' Enabled','Coin Status');
+					}
+					if (ajax_data.status === 'disable') {
+						toastr.success(ajax_data.coin+' Disabled','Coin Status');
+					}
+					//get_coins_list(data.coins);
+				} else {
+					//get_coins_list(data);
+					if (electrum_option == false) {
+						//get_coins_list('');
+						//$('.refresh_dex_balances').trigger('click');
+					} else {
+						//get_coins_list(data);
+					}
+				}
+
+				if (!data.error === false) {
+					//console.log(data.error);
+					if (data.error == 'coin cant be activated till synced') { //{error: "couldnt find coin locally installed", coin: "BTC"}
+						toastr.info("Coin can't be acviated till synced.<br>Try in a moment.",'Coin Status');
+					}
+					if (data.error == 'couldnt find coin locally installed') { //{error: "couldnt find coin locally installed", coin: "BTC"}
+						bootbox.alert({
+							title: "Couldn't find "+data.coin+" locally installed",
+							message: `<p>It seems you don't have `+data.coin+` wallet installed on your OS. Please check these following points to make sure you have your wallet setup properly:</p>
+							<ol>
+								<li>Make sure your wallet is installed properly.</li>
+								<li>Make sure your wallet is running and synced to network.</li>
+								<li>Make sure your wallet has proper RPC settings configured in it's configuration file.</li>
+								<li>If you have all the above covered properly, please logout and then login back and try activating the coin again.</li>
+							</ol>
+							<p>If you still having issues activating the your wallet, please get in touch with our support desk.</p>
+							<ul>
+								<li><a href="https://support.supernet.org/" target="_blank">https://support.supernet.org</a></li>
+							</ul>`,
+							size: 'large'
+						});
+					}
+				}
+			}).fail(function(jqXHR, textStatus, errorThrown) {
+			    // If fail
+			    console.log(textStatus + ': ' + errorThrown);
+			});
+		});
 	} else {
 		console.log(electrum_option);
 		console.log("native selected for " + data.coin);
 		var ajax_data = {"userpass":userpass,"method":data.method,"coin":data.coin};
-	}
 
-	console.log(ajax_data);
+		console.log(ajax_data);
 
-	$.ajax({
-		async: true,
-	    data: JSON.stringify(ajax_data),
-	    dataType: 'json',
-	    type: 'POST',
-	    url: url
-	}).done(function(data) {
-		// If successful
-		console.log(data);
-		if (!data.userpass === false) {
-			console.log('first marketmaker api call execution after marketmaker started.')
-			sessionStorage.setItem('mm_usercoins', JSON.stringify(data.coins));
-			sessionStorage.setItem('mm_userpass', data.userpass);
-			sessionStorage.setItem('mm_mypubkey', data.mypubkey);
-			get_coin_info('MNZ');
+		$.ajax({
+			async: true,
+		    data: JSON.stringify(ajax_data),
+		    dataType: 'json',
+		    type: 'POST',
+		    url: url
+		}).done(function(data) {
+			// If successful
+			console.log(data);
+			if (!data.userpass === false) {
+				console.log('first marketmaker api call execution after marketmaker started.')
+				sessionStorage.setItem('mm_usercoins', JSON.stringify(data.coins));
+				sessionStorage.setItem('mm_userpass', data.userpass);
+				sessionStorage.setItem('mm_mypubkey', data.mypubkey);
+				get_coin_info('MNZ');
 
-			if (ajax_data.status === 'enable') {
-				toastr.success(ajax_data.coin+' Enabled','Coin Status');
-			}
-			if (ajax_data.status === 'disable') {
-				toastr.success(ajax_data.coin+' Disabled','Coin Status');
-			}
-			//get_coins_list(data.coins);
-		} else {
-			//get_coins_list(data);
-			if (electrum_option == false) {
-				//get_coins_list('');
-				//$('.refresh_dex_balances').trigger('click');
+				if (ajax_data.status === 'enable') {
+					toastr.success(ajax_data.coin+' Enabled','Coin Status');
+				}
+				if (ajax_data.status === 'disable') {
+					toastr.success(ajax_data.coin+' Disabled','Coin Status');
+				}
+				//get_coins_list(data.coins);
 			} else {
 				//get_coins_list(data);
+				if (electrum_option == false) {
+					//get_coins_list('');
+					//$('.refresh_dex_balances').trigger('click');
+				} else {
+					//get_coins_list(data);
+				}
 			}
-		}
 
-		if (!data.error === false) {
-			//console.log(data.error);
-			if (data.error == 'coin cant be activated till synced') { //{error: "couldnt find coin locally installed", coin: "BTC"}
-				toastr.info("Coin can't be acviated till synced.<br>Try in a moment.",'Coin Status');
+			if (!data.error === false) {
+				//console.log(data.error);
+				if (data.error == 'coin cant be activated till synced') { //{error: "couldnt find coin locally installed", coin: "BTC"}
+					toastr.info("Coin can't be acviated till synced.<br>Try in a moment.",'Coin Status');
+				}
+				if (data.error == 'couldnt find coin locally installed') { //{error: "couldnt find coin locally installed", coin: "BTC"}
+					bootbox.alert({
+						title: "Couldn't find "+data.coin+" locally installed",
+						message: `<p>It seems you don't have `+data.coin+` wallet installed on your OS. Please check these following points to make sure you have your wallet setup properly:</p>
+						<ol>
+							<li>Make sure your wallet is installed properly.</li>
+							<li>Make sure your wallet is running and synced to network.</li>
+							<li>Make sure your wallet has proper RPC settings configured in it's configuration file.</li>
+							<li>If you have all the above covered properly, please logout and then login back and try activating the coin again.</li>
+						</ol>
+						<p>If you still having issues activating the your wallet, please get in touch with our support desk.</p>
+						<ul>
+							<li><a href="https://support.supernet.org/" target="_blank">https://support.supernet.org</a></li>
+						</ul>`,
+						size: 'large'
+					});
+				}
 			}
-			if (data.error == 'couldnt find coin locally installed') { //{error: "couldnt find coin locally installed", coin: "BTC"}
-				bootbox.alert({
-					title: "Couldn't find "+data.coin+" locally installed",
-					message: `<p>It seems you don't have `+data.coin+` wallet installed on your OS. Please check these following points to make sure you have your wallet setup properly:</p>
-					<ol>
-						<li>Make sure your wallet is installed properly.</li>
-						<li>Make sure your wallet is running and synced to network.</li>
-						<li>Make sure your wallet has proper RPC settings configured in it's configuration file.</li>
-						<li>If you have all the above covered properly, please logout and then login back and try activating the coin again.</li>
-					</ol>
-					<p>If you still having issues activating the your wallet, please get in touch with our support desk.</p>
-					<ul>
-						<li><a href="https://support.supernet.org/" target="_blank">https://support.supernet.org</a></li>
-					</ul>`,
-					size: 'large'
-				});
-			}
-		}
-	}).fail(function(jqXHR, textStatus, errorThrown) {
-	    // If fail
-	    console.log(textStatus + ': ' + errorThrown);
-	});
+		}).fail(function(jqXHR, textStatus, errorThrown) {
+		    // If fail
+		    console.log(textStatus + ': ' + errorThrown);
+		});
+	}
+
+	return
 }
 
 
@@ -2192,6 +2263,8 @@ $('.your_coins_balance_info').on('click', '.coin_balance_receive', function() {
 $('.your_coins_balance_info').on('click', '.coin_balance_send', function() {
 	console.log('coin_balance_send clicked');
 	console.log($(this).data());
+
+	var tx_coin = $(this).data('coin');
 	
 	var coin_balance_send_bootbox = bootbox.dialog({
 		message: `
@@ -2205,15 +2278,15 @@ $('.your_coins_balance_info').on('click', '.coin_balance_send', function() {
 
 							<form class="form-horizontal">
 								<div class="form-group">
-									<label for="send-toaddr" class="col-sm-2 control-label">To</label>
+									<label for="bot_send_toaddr" class="col-sm-2 control-label">To</label>
 									<div class="col-sm-10">
-										<input type="text" class="form-control" id="send-toaddr" placeholder="Address">
+										<input type="text" class="form-control" id="bot_send_toaddr" placeholder="Address">
 									</div>
 								</div>
 								<div class="form-group">
-									<label for="send-amount" class="col-sm-2 control-label">Amount</label>
+									<label for="bot_send_amount" class="col-sm-2 control-label">Amount</label>
 									<div class="col-sm-10">
-										<input type="text" class="form-control" id="send-amount" placeholder="e.g. 0.01">
+										<input type="text" class="form-control" id="bot_send_amount" placeholder="e.g. 0.01">
 									</div>
 								</div>
 							</form>
@@ -2238,10 +2311,18 @@ $('.your_coins_balance_info').on('click', '.coin_balance_send', function() {
 				label: "Send Transaction",
 				className: 'btn-primary btn-bot_settings_update',
 				callback: function(){
-					//console.log($('.trading_pair_coin_newprice').val())
-					//console.log($('.trading_pair_coin_newvolume').val())
-					//console.log(data.rel);
-					//console.log(data.base);
+					var to_addr = $('#bot_send_toaddr').val();
+					var send_amount = $('#bot_send_amount').val();
+					console.log(to_addr);
+					console.log(send_amount);
+
+					var output_data = {};
+					output_data[to_addr] = send_amount;
+					console.log(output_data);
+
+					
+					console.log(tx_coin);
+					create_sendtx(tx_coin, output_data);
 				}
 			}
 		}
@@ -2252,6 +2333,98 @@ $('.your_coins_balance_info').on('click', '.coin_balance_send', function() {
 	});
 
 });
+
+
+function create_sendtx(coin,tx_data){
+	console.log(tx_data);
+
+	var userpass = sessionStorage.getItem('mm_userpass');
+	var ajax_data = {"userpass":userpass,"method":"withdraw","coin": coin, "outputs": [tx_data]};
+	var url = "http://127.0.0.1:7783";
+
+	console.log(ajax_data);
+
+
+	$.ajax({
+		async: true,
+		data: JSON.stringify(ajax_data),
+		dataType: 'json',
+		type: 'POST',
+		url: url
+	}).done(function(data) {
+		// If successful
+		console.log(data);
+		if (!data.userpass === false) {
+			console.log('first marketmaker api call execution after marketmaker started.')
+			sessionStorage.setItem('mm_usercoins', JSON.stringify(data.coins));
+			sessionStorage.setItem('mm_userpass', data.userpass);
+			sessionStorage.setItem('mm_mypubkey', data.mypubkey);
+		} else {
+
+		}
+		
+	}).fail(function(jqXHR, textStatus, errorThrown) {
+		// If fail
+		console.log(textStatus + ': ' + errorThrown);
+	});
+
+/*	var a1 = $.ajax({
+			async: true,
+			data: JSON.stringify(ajax_data),
+			dataType: 'json',
+			type: 'POST',
+			url: url
+		}),
+		a2 = a1.then(function(data) {
+			// .then() returns a new promise
+			console.log(data);
+			if (data.complete == false) {
+				toastr.error('Uncessful Transaction. Please try again.','Tansaction info');
+			}
+			if (data.complete == true) {
+				bootbox.confirm({
+					message: `<b>Send</b>: `+send_amount+` `+ajax_data.coin+`<br>
+									<b>To</b>: `+to_addr+`<br>`,
+					buttons: {
+						confirm: {
+							label: 'Confirm',
+							className: 'btn-primary'
+						},
+						cancel: {
+							label: 'Cancel',
+							className: 'btn-default'
+						}
+					},
+					callback: function (result) {
+						console.log('This was logged in the callback: ' + result);
+
+						if (result == true) {
+							var ajax_data2 = {"userpass":userpass,"method":"sendrawtransaction","coin": coin, "signedtx": data.hex};
+							console.log(ajax_data2);
+
+							toastr.info('Transaction Executed', 'Transaction Status');
+
+							$.ajax({
+									async: true,
+									data: JSON.stringify(ajax_data2),
+									dataType: 'json',
+									type: 'POST',
+									url: url
+								})
+						} else {
+							console.log('Sending Transaction operation canceled.');
+							return {'output': 'canceled'};
+						}
+					}
+				});
+			}
+	});
+
+	a2.done(function(data) {
+		console.log(data);
+	});*/
+}
+
 
 function update_min_max_price_input(){
 	var selected_coin = JSON.parse(sessionStorage.getItem('mm_selectedcoin'));
