@@ -2712,12 +2712,15 @@ function bot_stop_pause_resume(bot_data) {
 
 	if (bot_data.action == 'pause') {
 		var ajax_data = {"userpass":userpass,"method":"bot_pause","botid":bot_data.botid};
+		var action_result = 'paused';
 	}
 	if (bot_data.action == 'resume') {
 		var ajax_data = {"userpass":userpass,"method":"bot_resume","botid":bot_data.botid};
+		var action_result = 'resumed';
 	}
 	if (bot_data.action == 'stop') {
 		var ajax_data = {"userpass":userpass,"method":"bot_stop","botid":bot_data.botid};
+		var action_result = 'stopped';
 	}
 
 	var url = "http://127.0.0.1:7783";
@@ -2734,7 +2737,7 @@ function bot_stop_pause_resume(bot_data) {
 		if (!data.error === false) {
 			toastr.error(data.error, 'Bot Info');
 		} else if (data.result == 'success') {
-			toastr.success('Bot ID: ' + bot_data.botid + ' ' + bot_data.action + 'ed', 'Bot Info');
+			toastr.success('Bot ID: ' + bot_data.botid + ' ' + action_result + 'ed', 'Bot Info');
 		}
 	}).fail(function(jqXHR, textStatus, errorThrown) {
 	    // If fail
