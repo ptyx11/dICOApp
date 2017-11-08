@@ -620,7 +620,7 @@ $('.btn-bot_action').click(function(e){
 
 	pair_volume = pair_price * base_volume;
 
-	$('.relvol_basevol').html(pair_volume);
+	$('.relvol_basevol').html(pair_volume.toFixed(8));
 
 	bot_data = {}
 	bot_data.price = pair_price;
@@ -2692,6 +2692,10 @@ function bot_status(bot_data) {
 										<span class="input-group-addon coin_ticker" id="trading_pair_coin_ticker" style="font-size: 20px;">` + base_form + `</span>
 										<input type="number" class="form-control trading_pair_coin_newvolume" placeholder="Amount e.g. 12.5" style="height: 64px; font-size: 20px;">
 									</div>
+									<div class="input-group col-sm-12">
+										<span class="input-group-addon" style="font-size: 30px; font-weight: 200; border: 0; background-color: #fff;">It'll cost you</span>
+										<span class="input-group-addon" style="font-size: 40px; font-weight: 100; border: 0; background-color: #fff;"><span class="new_relvol_basevol">0</span> <span style="font-size: 25px; background-color: #fff; font-weight: 100;">` + data.rel.toUpperCase() + `</span></span>
+									</div>
 
 
 								</div>
@@ -2717,12 +2721,17 @@ function bot_status(bot_data) {
 							//console.log($('.trading_pair_coin_newvolume').val())
 							//console.log(data.rel);
 							//console.log(data.base);
+
+							var newmaxprice = $('.trading_pair_coin_newprice').val();
+							var newbasevol = $('.trading_pair_coin_newvolume').val();
+							var newrelvolume = newmaxprice * newbasevol;
+
 							bot_update_data = {}
 							bot_update_data.rel = data.rel;
 							bot_update_data.base = data.base;
 							bot_update_data.botid = data.botid;
-							bot_update_data.newprice = $('.trading_pair_coin_newprice').val();
-							bot_update_data.newvolume = $('.trading_pair_coin_newvolume').val();
+							bot_update_data.newprice = newmaxprice;
+							bot_update_data.newvolume = newrelvolume;
 
 							//console.log(bot_update_data);
 
@@ -2740,6 +2749,12 @@ function bot_status(bot_data) {
 
 
 				$('.trading_pair_coin_newprice').keyup(function() {
+
+					var newmaxprice = $('.trading_pair_coin_newprice').val();
+					var newbasevol = $('.trading_pair_coin_newvolume').val();
+					var newrelvolume = newmaxprice * newbasevol;
+
+					$('.new_relvol_basevol').html(newrelvolume.toFixed(8));
 
 					var max_min_newprice = $('.trading_pair_coin_newprice')
 					var max_newvolume = $('.trading_pair_coin_newvolume')
@@ -2764,6 +2779,12 @@ function bot_status(bot_data) {
 				});
 
 				$('.trading_pair_coin_newvolume').keyup(function() {
+
+					var newmaxprice = $('.trading_pair_coin_newprice').val();
+					var newbasevol = $('.trading_pair_coin_newvolume').val();
+					var newrelvolume = newmaxprice * newbasevol;
+
+					$('.new_relvol_basevol').html(newrelvolume.toFixed(8));
 
 					var max_min_newprice = $('.trading_pair_coin_newprice')
 					var max_newvolume = $('.trading_pair_coin_newvolume')
@@ -2849,6 +2870,8 @@ function bot_screen_sellcoin_balance(sig) {
 				<span>
 					<button class="btn btn-danger btn-xs coin_balance_disable" style="margin-top: 6px;" data-electrum=true data-method="disable" data-coin="` + coin + `">Disable</button>
 					<button class="btn btn-warning btn-xs coin_balance_receive" style="margin-top: 6px;" data-coin="` + coin + `">Receive</button>
+					<button class="btn btn-success btn-xs coin_balance_send" style="margin-top: 6px;" data-coin="` + coin + `">Send</button>
+					<button class="btn btn-info btn-xs" style="margin-top: 6px;" data-coin="` + coin + `">Inventory</button>
 				</span>`;
 				$('.trading_sellcoin_ticker_name').html('<img src="img/cryptologo/'+coin.toLowerCase()+'.png" style="width: 30px;"> '+ return_coin_name(coin) + ' ('+coin+')'+button_controls);
 				$('.trading_sellcoin_balance').html(data.coin.balance + ' <span style="font-size: 60%; font-weight: 100;">' + coin + '</span><br><span style="font-size: 50%; font-weight: 200;">' + data.coin.smartaddress + '</span>');
@@ -2910,6 +2933,8 @@ function bot_screen_coin_balance(sig) {
 				<span>
 					<button class="btn btn-danger btn-xs coin_balance_disable" style="margin-top: 6px;" data-electrum=true data-method="disable" data-coin="` + coin + `">Disable</button>
 					<button class="btn btn-warning btn-xs coin_balance_receive" style="margin-top: 6px;" data-coin="` + coin + `">Receive</button>
+					<button class="btn btn-success btn-xs coin_balance_send" style="margin-top: 6px;" data-coin="` + coin + `">Send</button>
+					<button class="btn btn-info btn-xs" style="margin-top: 6px;" data-coin="` + coin + `">Inventory</button>
 				</span>`;
 				$('.trading_coin_ticker_name').html('<img src="img/cryptologo/'+coin.toLowerCase()+'.png" style="width: 30px;"> '+ return_coin_name(coin) + ' ('+coin+')'+button_controls);
 				$('.trading_coin_balance').html(data.coin.balance + ' <span style="font-size: 60%; font-weight: 100;">' + coin + '</span><br><span style="font-size: 50%; font-weight: 200;">' + data.coin.smartaddress + '</span>');
