@@ -2360,7 +2360,12 @@ function create_sendtx(coin,tx_data){
 			sessionStorage.setItem('mm_userpass', data.userpass);
 			sessionStorage.setItem('mm_mypubkey', data.mypubkey);
 		} else {
-
+			if (data.complete == true) {
+				console.log(data.hex);
+				bot_sendrawtx(data);
+			} else {
+				toastr.error('Transaction did not complete. Please try again.', 'Transaction Info');
+			}
 		}
 		
 	}).fail(function(jqXHR, textStatus, errorThrown) {
