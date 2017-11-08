@@ -1,6 +1,6 @@
 {
   "name": "dICOApp",
-  "version": "0.5.0",
+  "version": "0.5.2",
   "description": "A simple dICO application implimentation based on BarterDEX SimpleGUI with powertools for Traders",
   "main": "main.js",
   "scripts": {
