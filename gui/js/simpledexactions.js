@@ -2215,7 +2215,7 @@ function check_bot_list(sig) {
 					exchange_bot_list_tr += '<tr>';
 					//exchange_bot_list_tr += '<td>'+val.botid+'</td>';
 					exchange_bot_list_tr += '<td>'+val.name+'</td>';
-					exchange_bot_list_tr += '<td>'+val.action+'</td>';
+					//exchange_bot_list_tr += '<td>'+val.action+'</td>';
 					exchange_bot_list_tr += '<td>'+max_min_val+'</td>';
 					exchange_bot_list_tr += '<td>'+val.totalrelvolume+'</td>';
 					exchange_bot_list_tr += '<td>'+val.trades.length+'</td>';
