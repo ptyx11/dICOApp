@@ -659,6 +659,7 @@ $('.btn-trading_coin_balance_refresh').click(function(e){
 	console.log('btn-trading_coin_balance_refresh clicked');
 	console.log($(this).data());
 
+	bot_screen_sellcoin_balance();
 	bot_screen_coin_balance();
 })
 
@@ -854,7 +855,8 @@ function enable_disable_coin(data) {
 	if (electrum_option == false) {
 		console.log(electrum_option);
 		console.log("electrum selected for " + data.coin);
-		var ajax_data = {"userpass":userpass,"method":"electrum","coin":data.coin,"ipaddr":"46.4.125.2","port":50001};
+		var rand_electrum_srv = get_random_electrum_server(data.coin);
+		var ajax_data = {"userpass":userpass,"method":"electrum","coin":data.coin,"ipaddr":rand_electrum_srv.ipaddr,"port":rand_electrum_srv.port};
 	} else {
 		console.log(electrum_option);
 		console.log("native selected for " + data.coin);
@@ -1471,7 +1473,7 @@ function addcoins_dialog(){
 							<select class="selectpicker addcoin_enable_disable_selection" data-live-search="true" data-hide-disabled="true" data-width="100%"></select>
 							</div>
 							<div class="col-sm-6">
-							<input class="toggle_checkbox toggle_font_lg" id="addcoin_toggle_native_electrum" type="checkbox" checked data-toggle="toggle" data-on="Native Mode" data-off="Electrum Mode" data-size="large" data-onstyle="primary" data-offstyle="info" data-width="100%" data-height="64px" disabled>
+							<input class="toggle_checkbox toggle_font_lg" id="addcoin_toggle_native_electrum" type="checkbox" checked data-toggle="toggle" data-on="Native Mode" data-off="Electrum Mode" data-size="large" data-onstyle="primary" data-offstyle="info" data-width="100%" data-height="64px">
 							</div>
 
 
@@ -2087,6 +2089,153 @@ $('input[name=trading_pair_options]').change(function() {
 	}
 });
 
+$('.trading_pair_coin').on('changed.bs.select', function (e) {
+	$('.trading_pair_coin').selectpicker('val');
+	bot_screen_sellcoin_balance();
+	bot_screen_coin_balance();
+});
+
+$('.your_coins_balance_info').on('click', '.coin_balance_enable_native', function() {
+	console.log('coin_balance_enable_native clicked');
+	console.log($(this).data());
+
+	enable_disable_coin($(this).data());
+	bot_screen_sellcoin_balance();
+	bot_screen_coin_balance();
+});
+
+$('.your_coins_balance_info').on('click', '.coin_balance_enable_electrum', function() {
+	console.log('coin_balance_enable_electrum clicked');
+	console.log($(this).data());
+	
+	enable_disable_coin($(this).data());
+	bot_screen_sellcoin_balance();
+	bot_screen_coin_balance();
+});
+
+$('.your_coins_balance_info').on('click', '.coin_balance_disable', function() {
+	console.log('coin_balance_disable clicked');
+	console.log($(this).data());
+	
+	enable_disable_coin($(this).data());
+	bot_screen_sellcoin_balance();
+	bot_screen_coin_balance();
+});
+
+$('.your_coins_balance_info').on('click', '.coin_balance_receive', function() {
+	console.log('coin_balance_receive clicked');
+	console.log($(this).data());
+	coin = $(this).data('coin');
+
+	var coin_name = return_coin_name(coin);
+
+	var userpass = sessionStorage.getItem('mm_userpass');
+	var ajax_data = {"userpass":userpass,"method":"getcoin","coin": coin};
+	var url = "http://127.0.0.1:7783";
+
+
+	$.ajax({
+		async: true,
+		data: JSON.stringify(ajax_data),
+		dataType: 'json',
+		type: 'POST',
+		url: url
+	}).done(function(data) {
+		// If successful
+		console.log(data);
+		if (!data.userpass === false) {
+			console.log('first marketmaker api call execution after marketmaker started.')
+			sessionStorage.setItem('mm_usercoins', JSON.stringify(data.coins));
+			sessionStorage.setItem('mm_userpass', data.userpass);
+			sessionStorage.setItem('mm_mypubkey', data.mypubkey);
+			get_coin_info('MNZ');
+		}
+
+		bootbox.dialog({
+		    //title: 'A custom dialog with init',
+			message: '<div style="text-align: center; margin-top: -40px;"><img src="img/cryptologo/'+coin+'.png" style="border: 10px solid #fff;border-radius: 50px; background: #fff;"/></div><div style="text-align: center;"><div id="receive_addr_qrcode"></div><pre style="font-size: 18px;">'+data.coin.smartaddress+'</pre class="receive_addr_qrcode_addr"></div>'
+		});
+
+		var qrcode = new QRCode("receive_addr_qrcode");
+		qrcode.makeCode(data.coin.smartaddress); // make another code.
+		$('#receive_addr_qrcode > img').removeAttr('style');
+		$('#receive_addr_qrcode > img').css('display', 'initial');
+		$('#receive_addr_qrcode > img').css('border', '9px solid #f1f1f1','border-radius','5px','margin', '5px');
+		$('#receive_addr_qrcode > img').css('border-radius','5px');
+		$('#receive_addr_qrcode > img').css('margin', '5px');
+
+	}).fail(function(jqXHR, textStatus, errorThrown) {
+		// If fail
+		console.log(textStatus + ': ' + errorThrown);
+	});
+})
+
+
+$('.your_coins_balance_info').on('click', '.coin_balance_send', function() {
+	console.log('coin_balance_send clicked');
+	console.log($(this).data());
+	
+	var coin_balance_send_bootbox = bootbox.dialog({
+		message: `
+			<div class="row">
+				<div class="col-sm-12">
+					<div class="panel panel-default">
+						<div class="panel-heading">
+						<h3 class="panel-title"><strong>Change This Auto Trade's Settings</strong></h3>
+						</div>
+						<div class="panel-body"> <!-- panel-body -->
+
+							<div class="form-group">
+								<span style="float: right; font-size: 18px;"><span>New </span> Price to <span></span></span>
+							</div>
+							<div class="input-group col-sm-12">
+								<span class="input-group-addon"></span>
+								<input type="number" class="form-control trading_pair_coin_newprice" placeholder="Price e.g. 0.01" style="height: 64px; font-size: 20px;">
+								<span class="input-group-addon" id="trading_pair_coin_price_max_min_update" style="font-size: 20px;"></span>
+							</div>
+							<div class="form-group" style="margin-top: 15px; margin-bottom: 0px;">
+								<span style="font-size: 18px;"><span>New Max</span> Amount to <span></span></span>
+							</div>
+							<div class="input-group col-sm-12">
+								<span class="input-group-addon coin_ticker" id="trading_pair_coin_ticker" style="font-size: 20px;"></span>
+								<input type="number" class="form-control trading_pair_coin_newvolume" placeholder="Amount e.g. 12.5" style="height: 64px; font-size: 20px;">
+							</div>
+
+
+						</div>
+					</div>
+				</div>
+			</div>`,
+		closeButton: false,
+		size: 'large',
+
+		buttons: {
+			cancel: {
+				label: "Cancel",
+				className: 'btn-danger',
+				callback: function(){
+
+				}
+			},
+			ok: {
+				label: "Update",
+				className: 'btn-primary btn-bot_settings_update',
+				callback: function(){
+					//console.log($('.trading_pair_coin_newprice').val())
+					//console.log($('.trading_pair_coin_newvolume').val())
+					//console.log(data.rel);
+					//console.log(data.base);
+				}
+			}
+		}
+	});
+	coin_balance_send_bootbox.init(function(){
+		console.log('coin_balance_send_bootbox dialog opened.')
+		
+	});
+
+});
+
 function update_min_max_price_input(){
 	var selected_coin = JSON.parse(sessionStorage.getItem('mm_selectedcoin'));
 	var coin = selected_coin.coin;
@@ -2659,8 +2808,24 @@ function bot_screen_sellcoin_balance(sig) {
 			get_coin_info('MNZ');
 			bot_screen_sellcoin_balance();
 		} else {
-			$('.trading_sellcoin_ticker_name').html('<img src="img/cryptologo/'+coin.toLowerCase()+'.png" style="width: 30px;"> '+ return_coin_name(coin) + ' ('+coin+')');
-			$('.trading_sellcoin_balance').html(data.coin.balance + ' <span style="font-size: 60%; font-weight: 100;">' + coin + '</span><br><span style="font-size: 50%; font-weight: 200;">' + data.coin.smartaddress + '</span>');
+			if (!data.error === false && data.error === 'coin is disabled') {
+				var button_controls = `<br>
+				<span>
+					<button class="btn btn-primary btn-xs coin_balance_enable_native" style="margin-top: 6px; margin-right: 3px;" data-electrum=true data-method="enable" data-coin="` + coin + `">Enable Native</button>
+					<button class="btn btn-warning btn-xs coin_balance_enable_electrum" style="margin-top: 6px;" data-electrum=false data-method="enable" data-coin="` + coin + `">Enable Electrum</button>
+				</span>`;
+				$('.trading_sellcoin_ticker_name').html('<img src="img/cryptologo/'+coin.toLowerCase()+'.png" style="width: 30px;"> '+ return_coin_name(coin) + ' ('+coin+')'+button_controls);
+				$('.trading_sellcoin_balance').html('Coin is disabled');
+			} else {
+				var button_controls = `<br>
+				<span>
+					<button class="btn btn-danger btn-xs coin_balance_disable" style="margin-top: 6px;" data-electrum=true data-method="disable" data-coin="` + coin + `">Disable</button>
+					<button class="btn btn-warning btn-xs coin_balance_receive" style="margin-top: 6px;" data-coin="` + coin + `">Receive</button>
+					
+				</span>`;
+				$('.trading_sellcoin_ticker_name').html('<img src="img/cryptologo/'+coin.toLowerCase()+'.png" style="width: 30px;"> '+ return_coin_name(coin) + ' ('+coin+')'+button_controls);
+				$('.trading_sellcoin_balance').html(data.coin.balance + ' <span style="font-size: 60%; font-weight: 100;">' + coin + '</span><br><span style="font-size: 50%; font-weight: 200;">' + data.coin.smartaddress + '</span>');
+			}
 		}
 
 	}).fail(function(jqXHR, textStatus, errorThrown) {
@@ -2705,8 +2870,27 @@ function bot_screen_coin_balance(sig) {
 			get_coin_info('MNZ');
 			bot_screen_coin_balance();
 		} else {
-			$('.trading_coin_ticker_name').html('<img src="img/cryptologo/'+coin.toLowerCase()+'.png" style="width: 30px;"> '+ return_coin_name(coin) + ' ('+coin+')');
-			$('.trading_coin_balance').html(data.coin.balance + ' <span style="font-size: 80%; font-weight: 100;">' + coin + '</span><br><span style="font-size: 50%; font-weight: 200;">' + data.coin.smartaddress + '</span>');
+			if (!data.error === false && data.error === 'coin is disabled') {
+				var button_controls = `<br>
+				<span>
+					<button class="btn btn-primary btn-xs coin_balance_enable_native" style="margin-top: 6px; margin-right: 3px;" data-electrum=true data-method="enable" data-coin="` + coin + `">Enable Native</button>
+					<button class="btn btn-warning btn-xs coin_balance_enable_electrum" style="margin-top: 6px;" data-electrum=false data-method="enable" data-coin="` + coin + `">Enable Electrum</button>
+				</span>`;
+				$('.trading_coin_ticker_name').html('<img src="img/cryptologo/'+coin.toLowerCase()+'.png" style="width: 30px;"> '+ return_coin_name(coin) + ' ('+coin+')'+button_controls);
+				$('.trading_coin_balance').html('Coin is disabled');
+			} else {
+				var button_controls = `<br>
+				<span>
+					<button class="btn btn-danger btn-xs coin_balance_disable" style="margin-top: 6px;" data-electrum=true data-method="disable" data-coin="` + coin + `">Disable</button>
+					<button class="btn btn-warning btn-xs coin_balance_receive" style="margin-top: 6px;" data-coin="` + coin + `">Receive</button>
+					
+				</span>`;
+				$('.trading_coin_ticker_name').html('<img src="img/cryptologo/'+coin.toLowerCase()+'.png" style="width: 30px;"> '+ return_coin_name(coin) + ' ('+coin+')'+button_controls);
+				$('.trading_coin_balance').html(data.coin.balance + ' <span style="font-size: 60%; font-weight: 100;">' + coin + '</span><br><span style="font-size: 50%; font-weight: 200;">' + data.coin.smartaddress + '</span>');
+			}
+
+			//$('.trading_coin_ticker_name').html('<img src="img/cryptologo/'+coin.toLowerCase()+'.png" style="width: 30px;"> '+ return_coin_name(coin) + ' ('+coin+')');
+			//$('.trading_coin_balance').html(data.coin.balance + ' <span style="font-size: 80%; font-weight: 100;">' + coin + '</span><br><span style="font-size: 50%; font-weight: 200;">' + data.coin.smartaddress + '</span>');
 		}
 
 	}).fail(function(jqXHR, textStatus, errorThrown) {

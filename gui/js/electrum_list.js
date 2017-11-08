@@ -1,4 +1,4 @@
-{
+var electrum_servers_list = {
   "ARG": [{"173.212.225.176": 50081},{"136.243.45.140": 50081}],
   "BTC": [{"173.212.225.176": 50001},{"136.243.45.140": 50001},{"18.216.195.109":10000}],
   "CHIPS": [{"173.212.225.176": 50076},{"136.243.45.140": 50076}],
@@ -20,4 +20,22 @@
   "VTC": [{"173.212.225.176": 50088},{"136.243.45.140": 50088}],
   "WLC": [{"173.212.225.176": 50052},{"136.243.45.140": 50052}],
   "ZEC": [{"173.212.225.176": 50032},{"136.243.45.140": 50032}]
+}
+
+
+Array.prototype.getRandomElectrumServer = function(){
+  return this[Math.floor(Math.random()*this.length)];
+}
+
+
+//electrum_coin_servers = electrum_servers_list['BTC']
+//console.log(electrum_coin_servers);
+
+function get_random_electrum_server(coin) {
+  var select_random_server = electrum_servers_list[coin][Math.floor(Math.random() * electrum_servers_list[coin].length)];
+  var return_data = {}
+  var ipaddr = _.keys(select_random_server);
+  return_data.ipaddr = ipaddr[0];
+  return_data.port = select_random_server[ipaddr[0]];
+  return return_data;
 }
