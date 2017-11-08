@@ -890,19 +890,6 @@ function enable_disable_coin(data) {
 		var ajax_data = {"userpass":userpass,"method":data.method,"coin":data.coin};
 	}
 
-	/*if (data.coin !== ' ' ) {
-		console.log('coin value is not empty');
-	} else {
-		console.log('coin value is empty');
-	}
-	if (data.coin !== ' ' && data.status == 'enable') {
-
-	} else if (data.coin !== ' ' && data.status == 'disable') {
-		var ajax_data = {"userpass":userpass,"method":data.status,"coin":data.coin};
-	} else if (data.coin == ' ') {
-		var ajax_data = {"userpass":userpass,"method":"getcoins"};
-	}*/
-
 	console.log(ajax_data);
 
 	$.ajax({
@@ -940,6 +927,9 @@ function enable_disable_coin(data) {
 
 		if (!data.error === false) {
 			//console.log(data.error);
+			if (data.error == 'coin cant be activated till synced') { //{error: "couldnt find coin locally installed", coin: "BTC"}
+				toastr.info("Coin can't be acviated till synced.<br>Try in a moment.",'Coin Status');
+			}
 			if (data.error == 'couldnt find coin locally installed') { //{error: "couldnt find coin locally installed", coin: "BTC"}
 				bootbox.alert({
 					title: "Couldn't find "+data.coin+" locally installed",
@@ -2209,26 +2199,24 @@ $('.your_coins_balance_info').on('click', '.coin_balance_send', function() {
 				<div class="col-sm-12">
 					<div class="panel panel-default">
 						<div class="panel-heading">
-						<h3 class="panel-title"><strong>Change This Auto Trade's Settings</strong></h3>
+						<h3 class="panel-title"><strong>Send Transaction</strong></h3>
 						</div>
 						<div class="panel-body"> <!-- panel-body -->
 
-							<div class="form-group">
-								<span style="float: right; font-size: 18px;"><span>New </span> Price to <span></span></span>
-							</div>
-							<div class="input-group col-sm-12">
-								<span class="input-group-addon"></span>
-								<input type="number" class="form-control trading_pair_coin_newprice" placeholder="Price e.g. 0.01" style="height: 64px; font-size: 20px;">
-								<span class="input-group-addon" id="trading_pair_coin_price_max_min_update" style="font-size: 20px;"></span>
-							</div>
-							<div class="form-group" style="margin-top: 15px; margin-bottom: 0px;">
-								<span style="font-size: 18px;"><span>New Max</span> Amount to <span></span></span>
-							</div>
-							<div class="input-group col-sm-12">
-								<span class="input-group-addon coin_ticker" id="trading_pair_coin_ticker" style="font-size: 20px;"></span>
-								<input type="number" class="form-control trading_pair_coin_newvolume" placeholder="Amount e.g. 12.5" style="height: 64px; font-size: 20px;">
-							</div>
-
+							<form class="form-horizontal">
+								<div class="form-group">
+									<label for="send-toaddr" class="col-sm-2 control-label">To</label>
+									<div class="col-sm-10">
+										<input type="text" class="form-control" id="send-toaddr" placeholder="Address">
+									</div>
+								</div>
+								<div class="form-group">
+									<label for="send-amount" class="col-sm-2 control-label">Amount</label>
+									<div class="col-sm-10">
+										<input type="text" class="form-control" id="send-amount" placeholder="e.g. 0.01">
+									</div>
+								</div>
+							</form>
 
 						</div>
 					</div>
@@ -2236,17 +2224,18 @@ $('.your_coins_balance_info').on('click', '.coin_balance_send', function() {
 			</div>`,
 		closeButton: false,
 		size: 'large',
+		className: 'custom_class_for_bootbox',
 
 		buttons: {
 			cancel: {
 				label: "Cancel",
-				className: 'btn-danger',
+				className: 'btn-default',
 				callback: function(){
 
 				}
 			},
 			ok: {
-				label: "Update",
+				label: "Send Transaction",
 				className: 'btn-primary btn-bot_settings_update',
 				callback: function(){
 					//console.log($('.trading_pair_coin_newprice').val())
@@ -2444,6 +2433,8 @@ function bot_buy_sell(bot_data) {
 
 	console.log(ajax_data);
 
+	console.log(JSON.stringify(ajax_data));
+
 	var url = "http://127.0.0.1:7783";
 
 	$.ajax({
@@ -2456,8 +2447,20 @@ function bot_buy_sell(bot_data) {
 		console.log(data);
 
 		if (!data.error === false) {
-			toastr.error(data.error + '<br>Balance: ' + data.balance + ' ' + data.coin, 'Bot Info');
-			bot_sendrawtx(data.withdraw);
+			if (data.error == 'not enough funds') {
+				//toastr.info(data.error + '<br>Balance: ' + data.balance + ' ' + data.coin, 'Bot Info');
+				bootbox.alert(`Looks like you don't have enough UTXOs in your balance.<br>
+					Not a problem. I have executed the recommended command to make required UTXOs for you.<br>
+					If you see some outgoing transactions from your barterDEX smartaddress that's sent to the same smartaddress of yours to create some inventory transactions for barterDEX to make required trades.<br>
+					Please try in a moment with same or different volume and you should be all good to go.`);
+				console.log(JSON.stringify(data))
+				
+				if (data.withdraw.complete === true) {
+					bot_sendrawtx(data.withdraw);
+				} else {
+					toastr.error('No withdraw info found. Please try again.', 'Bot Info');
+				}
+			}
 		} else if (data.result == 'success') {
 			toastr.success(data.name + ' started <br> Bot ID: ' + data.botid, 'Bot Info');
 		}
@@ -2484,6 +2487,7 @@ function bot_sendrawtx(bot_data) {
 	var url = "http://127.0.0.1:7783";
 
 	console.log(ajax_data);
+	console.log(JSON.stringify(ajax_data));
 
 	$.ajax({
 	    data: JSON.stringify(ajax_data),
@@ -2493,9 +2497,10 @@ function bot_sendrawtx(bot_data) {
 	}).done(function(data) {
 		// If successful
 		console.log(data);
+		console.log(JSON.stringify(data));
 
 		if (!data.error === false) {
-			toastr.error(data.error, 'Transaction Info');
+			toastr.error(data.error.message, 'Transaction Info');
 		} else if (data.result == 'success') {
 			toastr.info('Low no. of UTXOs<br>Please try again in 1 Minute.', 'Transaction Status');
 		}
@@ -2664,7 +2669,7 @@ function bot_status(bot_data) {
 							<td>` + result_answer + `</td>
 						</tr>
 						<tr>
-							<td>Trades</td>
+							<td>Trades Attempts</td>
 							<td>` + JSON.stringify(data.trades, null, 2) + `</td>
 						</tr>
 					</table>
@@ -2707,8 +2712,8 @@ function bot_status(bot_data) {
 
 				buttons: {
 					cancel: {
-						label: "Cancel",
-						className: 'btn-danger',
+						label: "Close",
+						className: 'btn-default',
 						callback: function(){
 
 						}
