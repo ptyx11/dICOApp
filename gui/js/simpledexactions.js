@@ -54,6 +54,8 @@ $(document).ready(function() {
 		get_coin_info('MNZ');
 
 //---- dICO App Settings END ----//
+		
+		$('.relvol_basevol_coin').html($('.trading_pair_coin').selectpicker('val'));
 
 	} else {
 		$('.mainbody').hide();
@@ -613,7 +615,12 @@ $('.btn-bot_action').click(function(e){
 	console.log($(this).data('action'));
 
 	pair_price = $('.trading_pair_coin_price').val();
-	pair_volume = $('.trading_pair_coin_volume').val();
+	
+	base_volume = $('.trading_pair_coin_volume').val();
+
+	pair_volume = pair_price * base_volume;
+
+	$('.relvol_basevol').html(pair_volume);
 
 	bot_data = {}
 	bot_data.price = pair_price;
@@ -623,6 +630,26 @@ $('.btn-bot_action').click(function(e){
 	console.log(bot_data);
 
 	bot_buy_sell(bot_data);
+});
+
+$('.trading_pair_coin_price').keyup(function(){
+	pair_price = $('.trading_pair_coin_price').val();
+	
+	base_volume = $('.trading_pair_coin_volume').val();
+
+	pair_volume = pair_price * base_volume;
+
+	$('.relvol_basevol').html(pair_volume);
+});
+
+$('.trading_pair_coin_volume').keyup(function(){
+	pair_price = $('.trading_pair_coin_price').val();
+	
+	base_volume = $('.trading_pair_coin_volume').val();
+
+	pair_volume = pair_price * base_volume;
+
+	$('.relvol_basevol').html(pair_volume);
 });
 
 
@@ -2091,6 +2118,7 @@ $('input[name=trading_pair_options]').change(function() {
 
 $('.trading_pair_coin').on('changed.bs.select', function (e) {
 	$('.trading_pair_coin').selectpicker('val');
+	$('.relvol_basevol_coin').html($('.trading_pair_coin').selectpicker('val'));
 	bot_screen_sellcoin_balance();
 	bot_screen_coin_balance();
 });
@@ -2821,7 +2849,6 @@ function bot_screen_sellcoin_balance(sig) {
 				<span>
 					<button class="btn btn-danger btn-xs coin_balance_disable" style="margin-top: 6px;" data-electrum=true data-method="disable" data-coin="` + coin + `">Disable</button>
 					<button class="btn btn-warning btn-xs coin_balance_receive" style="margin-top: 6px;" data-coin="` + coin + `">Receive</button>
-					
 				</span>`;
 				$('.trading_sellcoin_ticker_name').html('<img src="img/cryptologo/'+coin.toLowerCase()+'.png" style="width: 30px;"> '+ return_coin_name(coin) + ' ('+coin+')'+button_controls);
 				$('.trading_sellcoin_balance').html(data.coin.balance + ' <span style="font-size: 60%; font-weight: 100;">' + coin + '</span><br><span style="font-size: 50%; font-weight: 200;">' + data.coin.smartaddress + '</span>');
@@ -2883,7 +2910,6 @@ function bot_screen_coin_balance(sig) {
 				<span>
 					<button class="btn btn-danger btn-xs coin_balance_disable" style="margin-top: 6px;" data-electrum=true data-method="disable" data-coin="` + coin + `">Disable</button>
 					<button class="btn btn-warning btn-xs coin_balance_receive" style="margin-top: 6px;" data-coin="` + coin + `">Receive</button>
-					
 				</span>`;
 				$('.trading_coin_ticker_name').html('<img src="img/cryptologo/'+coin.toLowerCase()+'.png" style="width: 30px;"> '+ return_coin_name(coin) + ' ('+coin+')'+button_controls);
 				$('.trading_coin_balance').html(data.coin.balance + ' <span style="font-size: 60%; font-weight: 100;">' + coin + '</span><br><span style="font-size: 50%; font-weight: 200;">' + data.coin.smartaddress + '</span>');
